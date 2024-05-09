@@ -30,9 +30,9 @@ jobs:
           sudo chmod 0755 /usr/local/bin/terraform-docs
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.3.0'
+          ruby-version: '3.3.1'
           bundler-cache: true
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - uses: pre-commit/action@v3.0.0
+      - uses: pre-commit/action@v3.0.1
