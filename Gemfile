@@ -1,11 +1,13 @@
-# frozen_string_literal: true
+#  frozen_string_literal: true
 
-ruby '3.0.2'
+ruby '3.3.1'
 
-source 'https://rubygems.org/' do
-  gem 'kitchen-terraform', '~> 6.0.0'
-  group :dev do
-    gem 'reek', '~> 6.0.6', require: false
-    gem 'rubocop', '~> 1.24.1', require: false
-  end
+source 'https://rubygems.org'
+gem 'kitchen-terraform', '~> 7.0.2'
+# Force nori to v2.6 to avoid issue with inspec-gcp
+# See https://github.com/inspec/inspec-gcp/issues/596
+gem 'nori', '~> 2.6.0'
+group :dev do
+  # Transitive dependency in kitchen-terraform forces lower version of rubocop
+  # gem 'rubocop', '~> 1.62.1', require: false
 end

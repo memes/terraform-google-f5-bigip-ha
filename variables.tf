@@ -1,15 +1,28 @@
+variable "num_instances" {
+  type    = number
+  default = 2
+  validation {
+    # An HA group requires between 2 and 8 BIG-IP instances, inclusive.
+    condition     = floor(var.num_instances) == var.num_instances && var.num_instances > 1 && var.num_instances < 9
+    error_message = "The num_instances variable must be an integer between 2 and 8, inclusive."
+  }
+  description = <<-EOD
+  The number of BIG-IP instances to create as an HA group.
+  EOD
+}
+
 variable "prefix" {
   type = string
   validation {
-    # Upstream BIG-IP module adds "-XXXX" suffix to each instance name, so
-    # validate that the prefix is RFC1035 compliant with a maximum length of 58
-    # alphanumeric and/or - characters.
-    condition     = can(regex("^[a-z][a-z0-9-]{0,57}$", var.prefix))
-    error_message = "The prefix variable must be RFC1035 compliant and between 1 and 58 characters in length."
+    # This module names BIG-IP instances as this value + "-0n", where n is the one-based index of the instance. E.g.
+    # prefix-01, prefix-02,..., which means the maximum supported length for prefix is 60. Validate the prefix is
+    # RFC1035 compliant with a maximum length of 60 alphanumeric and/or - characters.
+    condition     = can(regex("^[a-z][a-z0-9-]{0,60}$", var.prefix))
+    error_message = "The prefix variable must be RFC1035 compliant and between 1 and 60 characters in length."
   }
   description = <<-EOD
 The prefix to use when naming resources managed by this module. Must be RFC1035
-compliant and between 1 and 58 characters in length, inclusive.
+compliant and between 1 and 60 characters in length, inclusive.
 EOD
 }
 
@@ -27,7 +40,7 @@ EOD
 variable "zones" {
   type = list(string)
   validation {
-    condition     = length(var.zones) > 0 && length(join("", [for zone in var.zones : can(regex("^[a-z]{2,20}-[a-z]{4,20}[0-9]-[a-z]$", zone)) ? "x" : ""])) == length(var.zones)
+    condition     = length(var.zones) > 0 && alltrue([for zone in var.zones : can(regex("^[a-z]{2,20}-[a-z]{4,20}[0-9]-[a-z]$", zone))])
     error_message = "At least one zone must be specified, and each zone must be a valid GCE zone name."
   }
   description = <<-EOD
@@ -49,10 +62,10 @@ EOD
 
 variable "machine_type" {
   type        = string
-  default     = "n1-standard-4"
+  default     = "n1-standard-8"
   description = <<-EOD
 The machine type to use for BIG-IP VMs; this may be a standard GCE machine type,
-or a customised VM ('custom-VCPUS-MEM_IN_MB'). Default value is 'n1-standard-4'.
+or a customised VM ('custom-VCPUS-MEM_IN_MB'). Default value is 'n1-standard-8'.
 *Note:* machine_type is highly-correlated with network bandwidth and performance;
 an N2 machine type will give better performance but has limited regional availability.
 EOD
@@ -83,7 +96,7 @@ variable "image" {
     condition     = can(regex("^(?:https://www.googleapis.com/compute/v1/)?projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/global/images/[a-z][a-z0-9-]{0,61}[a-z0-9]", var.image))
     error_message = "The image variable must be a fully-qualified URI."
   }
-  default     = "projects/f5-7626-networks-public/global/images/f5-bigip-16-1-1-0-0-16-payg-good-1gbps-210917181041"
+  default     = "projects/f5-7626-networks-public/global/images/f5-bigip-17-1-1-3-0-0-5-payg-good-1gbps-240321070835"
   description = <<-EOD
 The self-link URI for a BIG-IP image to use as a base for the VM cluster. This
 can be an official F5 image from GCP Marketplace, or a customised image.
@@ -112,62 +125,48 @@ the boot disk will have the same size as the base image.
 EOD
 }
 
-variable "mgmt_subnet_ids" {
-  type = list(list(object({
-    subnet_id          = string
-    public_ip          = bool
-    private_ip_primary = string
-  })))
+variable "mgmt_interface" {
+  type = object({
+    subnet_id = string
+    public_ip = bool
+  })
   validation {
-    condition     = can(regex("^x*$", join("", flatten([for outer in var.mgmt_subnet_ids : [for entry in outer : (coalesce(entry.subnet_id, "unspecified") == "unspecified" || can(regex("^(?:https://www\\.googleapis\\.com/compute/v1/)?projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/regions/[a-z][a-z-]+[0-9]/subnetworks/[a-z]([a-z0-9-]{0,61}[a-z0-9])?$", entry.subnet_id))) && (coalesce(entry.private_ip_primary, "undefined") == "undefined" || can(regex("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$", entry.private_ip_primary))) ? "x" : "!"]]))))
-    error_message = "Each mgmt_subnet_ids entry must contain a fully-qualified subnet self-link, and a valid or empty private IPv4 address."
+    condition     = can(regex("^(?:https://www\\.googleapis\\.com/compute/v1/)?projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/regions/[a-z][a-z-]+[0-9]/subnetworks/[a-z]([a-z0-9-]{0,61}[a-z0-9])?$", var.mgmt_interface.subnet_id))
+    error_message = "The mgmt_interface value must contain a fully-qualified subnet self-link."
   }
-  default = [
-    [{ "subnet_id" = null, "public_ip" = null, "private_ip_primary" = null }],
-    [{ "subnet_id" = null, "public_ip" = null, "private_ip_primary" = null }],
-  ]
   description = <<EOD
-TODO @memes - update
-List of maps of subnetids of the virtual network where the virtual machines will reside.
+Defines the subnetwork that will be attached to each instance's management interface (nic1), and a flag to assign a public
+IP adddress to the management interface.
 EOD
 }
 
-variable "external_subnet_ids" {
-  type = list(list(object({
-    subnet_id            = string
-    public_ip            = bool
-    private_ip_primary   = string
-    private_ip_secondary = string
-  })))
+variable "external_interface" {
+  type = object({
+    subnet_id = string
+    public_ip = bool
+  })
   validation {
-    condition     = can(regex("^x*$", join("", flatten([for outer in var.external_subnet_ids : [for entry in outer : (coalesce(entry.subnet_id, "unspecified") == "unspecified" || can(regex("^(?:https://www\\.googleapis\\.com/compute/v1/)?projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/regions/[a-z][a-z-]+[0-9]/subnetworks/[a-z]([a-z0-9-]{0,61}[a-z0-9])?$", entry.subnet_id))) && (coalesce(entry.private_ip_primary, "undefined") == "undefined" || can(regex("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$", entry.private_ip_primary))) && (coalesce(entry.private_ip_secondary, "undefined") == "undefined" || can(regex("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}(?:/[0-9]{1,2})?$", entry.private_ip_secondary))) ? "x" : "!"]]))))
-    error_message = "Each external_subnet_ids entry must contain a fully-qualified subnet self-link, and valid or empty private IPv4 addresses."
+    condition     = can(regex("^(?:https://www\\.googleapis\\.com/compute/v1/)?projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/regions/[a-z][a-z-]+[0-9]/subnetworks/[a-z]([a-z0-9-]{0,61}[a-z0-9])?$", var.external_interface.subnet_id))
+    error_message = "The external_interface object must contain a fully-qualified subnet self-link."
   }
-  default = [
-    [{ "subnet_id" = null, "public_ip" = null, "private_ip_primary" = null, "private_ip_secondary" = null }],
-    [{ "subnet_id" = null, "public_ip" = null, "private_ip_primary" = null, "private_ip_secondary" = null }],
-  ]
   description = <<-EOD
-TODO @memes - update
+Defines the subnetwork that will be attached to each instance's external interface (nic0), and a flag to assign a public
+IP adddress to the management interface.
 EOD
 }
 
-variable "internal_subnet_ids" {
-  type = list(list(object({
-    subnet_id          = string
-    public_ip          = bool
-    private_ip_primary = string
-  })))
+variable "internal_interfaces" {
+  type = list(object({
+    subnet_id = string
+    public_ip = bool
+  }))
   validation {
-    condition     = can(regex("^x*$", join("", flatten([for outer in var.internal_subnet_ids : [for entry in outer : (coalesce(entry.subnet_id, "unspecified") == "unspecified" || can(regex("^(?:https://www\\.googleapis\\.com/compute/v1/)?projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/regions/[a-z][a-z-]+[0-9]/subnetworks/[a-z]([a-z0-9-]{0,61}[a-z0-9])?$", entry.subnet_id))) && (coalesce(entry.private_ip_primary, "undefined") == "undefined" || can(regex("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$", entry.private_ip_primary))) ? "x" : "!"]]))))
-    error_message = "Each internal_subnet_ids entry must contain a fully-qualified subnet self-link, and valid or empty private IPv4 addresses."
+    condition     = var.internal_interfaces == null ? true : length(var.internal_interfaces) <= 6 && alltrue([for interface in var.internal_interfaces : can(regex("^(?:https://www\\.googleapis\\.com/compute/v1/)?projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/regions/[a-z][a-z-]+[0-9]/subnetworks/[a-z]([a-z0-9-]{0,61}[a-z0-9])?$", interface.subnet_id))])
+    error_message = "Each internal_interfaces entry must contain a fully-qualified subnet self-link."
   }
-  default = [
-    [{ "subnet_id" = null, "public_ip" = null, "private_ip_primary" = null }],
-    [{ "subnet_id" = null, "public_ip" = null, "private_ip_primary" = null }],
-  ]
   description = <<-EOD
-TODO @memes - update
+An optional list of up to 6 subnetworks that will be attached to each instance's internal interfaces (nic2...nicN),
+and flags to assign a public IP adddress to the internal interface.
 EOD
 }
 
@@ -216,14 +215,15 @@ variable "gcp_secret_version" {
 variable "DO_URL" {
   description = "URL to download the BIG-IP Declarative Onboarding module"
   type        = string
-  default     = "https://github.com/F5Networks/f5-declarative-onboarding/releases/download/v1.21.0/f5-declarative-onboarding-1.21.0-3.noarch.rpm"
+  default     = "https://github.com/F5Networks/f5-declarative-onboarding/releases/download/v1.42.0/f5-declarative-onboarding-1.42.0-9.noarch.rpm"
 }
+
 ## Please check and update the latest AS3 URL from https://github.com/F5Networks/f5-appsvcs-extension/releases/latest
 # always point to a specific version in order to avoid inadvertent configuration inconsistency
 variable "AS3_URL" {
   description = "URL to download the BIG-IP Application Service Extension 3 (AS3) module"
   type        = string
-  default     = "https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.28.0/f5-appsvcs-3.28.0-3.noarch.rpm"
+  default     = "https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.49.0/f5-appsvcs-3.49.0-6.noarch.rpm"
 }
 
 ## Please check and update the latest TS URL from https://github.com/F5Networks/f5-telemetry-streaming/releases/latest
@@ -231,7 +231,7 @@ variable "AS3_URL" {
 variable "TS_URL" {
   description = "URL to download the BIG-IP Telemetry Streaming module"
   type        = string
-  default     = "https://github.com/F5Networks/f5-telemetry-streaming/releases/download/v1.20.0/f5-telemetry-1.20.0-3.noarch.rpm"
+  default     = "https://github.com/F5Networks/f5-telemetry-streaming/releases/download/v1.34.0/f5-telemetry-1.34.0-1.noarch.rpm"
 }
 
 ## Please check and update the latest Failover Extension URL from https://github.com/f5devcentral/f5-cloud-failover-extension/releases/latest
@@ -239,7 +239,7 @@ variable "TS_URL" {
 variable "CFE_URL" {
   description = "URL to download the BIG-IP Cloud Failover Extension module"
   type        = string
-  default     = "https://github.com/F5Networks/f5-cloud-failover-extension/releases/download/v1.8.0/f5-cloud-failover-1.8.0-0.noarch.rpm"
+  default     = "https://github.com/F5Networks/f5-cloud-failover-extension/releases/download/v2.0.2/f5-cloud-failover-2.0.2-2.noarch.rpm"
 }
 
 ## Please check and update the latest FAST URL from https://github.com/F5Networks/f5-appsvcs-templates/releases/latest
@@ -247,15 +247,17 @@ variable "CFE_URL" {
 variable "FAST_URL" {
   description = "URL to download the BIG-IP FAST module"
   type        = string
-  default     = "https://github.com/F5Networks/f5-appsvcs-templates/releases/download/v1.9.0/f5-appsvcs-templates-1.9.0-1.noarch.rpm"
+  default     = "https://github.com/F5Networks/f5-appsvcs-templates/releases/download/v1.25.0/f5-appsvcs-templates-1.25.0-1.noarch.rpm"
 }
+
 ## Please check and update the latest runtime init URL from https://github.com/F5Networks/f5-bigip-runtime-init/releases/latest
 # always point to a specific version in order to avoid inadvertent configuration inconsistency
 variable "INIT_URL" {
   description = "URL to download the BIG-IP runtime init"
   type        = string
-  default     = "https://cdn.f5.com/product/cloudsolutions/f5-bigip-runtime-init/v1.2.1/dist/f5-bigip-runtime-init-1.2.1-1.gz.run"
+  default     = "https://cdn.f5.com/product/cloudsolutions/f5-bigip-runtime-init/v2.0.1/dist/f5-bigip-runtime-init-2.0.1-1.gz.run"
 }
+
 variable "labels" {
   type        = map(string)
   default     = {}
@@ -304,17 +306,39 @@ variable "sleep_time" {
   description = "The number of seconds/minutes of delay to build into creation of BIG-IP VMs; default is 250. BIG-IP requires a few minutes to complete the onboarding process and this value can be used to delay the processing of dependent Terraform resources."
 }
 
-variable "targets" {
-  type = object({
-    groups    = bool
-    instances = bool
-  })
-  default = {
-    groups    = true
-    instances = false
+variable "network_tags" {
+  type        = list(string)
+  default     = []
+  description = "The network tags which will be added to the BIG-IP VMs."
+}
+
+variable "instances" {
+  type = map(object({
+    metadata = map(string)
+    external = object({
+      primary_ip   = string
+      secondary_ip = string
+    })
+    mgmt = object({
+      primary_ip = string
+      # TODO @memes - upstream doesn't support assigning Alias IPs on control-plane
+      # secondary_ip = string
+    })
+    internals = list(object({
+      primary_ip = string
+      # TODO @memes - upstream doesn't support assigning Alias IPs on 'internal' interfaces
+      # secondary_ip = string
+    }))
+  }))
+  default = null
+  validation {
+    condition     = var.instances == null ? true : alltrue([for k, v in var.instances : can(regex("^[a-z][a-z0-9-]{0,61}[a-z0-9]$", k)) && (v == null ? true : (v.external == null ? true : (v.metadata == null ? true : alltrue([for k, v in v.metadata : can(regex("^[a-zA-Z0-9-_]{1,127}$", k))])) && (coalesce(v.external.primary_ip, "unspecified") == "unspecified" || can(cidrhost(v.external.primary_ip, 0))) && (coalesce(v.external.secondary_ip, "unspecified") == "unspecified" || can(cidrhost(v.external.secondary_ip, 0)))) && (v.mgmt == null ? true : (coalesce(v.mgmt.primary_ip, "unspecified") == "unspecified" || can(cidrhost(v.mgmt.primary_ip, 0))) /* TODO @memes && (coalesce(v.mgmt.secondary_ip, "unspecified") == "unspecified" || can(cidrhost(v.mgmt.secondary_ip, 0)))*/) && (v.internals == null ? true : alltrue([for entry in v.internals : (coalesce(entry.primary_ip, "unspecified") == "unspecified" || can(cidrhost(entry.primary_ip, 0))) /* TODO @memes && (coalesce(entry.secondary_ip, "unspecified") == "unspecified" || can(cidrhost(entry.secondary_ip, 0)))*/])))])
+    error_message = "Each interfaces entry key must be an RFC1035 compliant VM name, and valid or empty IP addresses for each entry."
   }
-  description = <<EOD
-Defines the target types to create for integration with GCP forwarding-rules, and/or
-load balancers.
-EOD
+  description = <<-EOD
+An optional list of up to 6 subnetworks that will be attached to each instance's internal interfaces (nic2...nicN),
+a flag to assign a public IP adddress to the internal interface, and an optional list of IP addresses. If the list of IP
+addresses is not empty, the values will be assigned to the interface as a primary address, one address per interface per
+provisioned VM.
+  EOD
 }

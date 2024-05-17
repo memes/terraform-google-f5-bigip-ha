@@ -6,6 +6,7 @@ repos:
     hooks:
       - id: yamllint
         files: \.(yml|yaml|talismanrc)$
+        exclude: 'kitchen\.yml$'
         types:
           - file
           - yaml

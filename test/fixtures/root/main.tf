@@ -14,44 +14,41 @@ provider "google" {
   region  = var.region
 }
 
-locals {
-  prefix = format("%s-%s", var.prefix, var.test_prefix)
-  mgmt_subnet_ids = [for i in range(0, 2) : [{
-    subnet_id          = var.subnets[1]
-    public_ip          = var.public_mgmt
-    private_ip_primary = null
-  }]]
-  external_subnet_ids = [for i in range(0, 2) : [{
-    subnet_id            = var.subnets[0]
-    public_ip            = var.public_external
-    private_ip_primary   = null
-    private_ip_secondary = null
-  }]]
-  internal_subnet_ids = [for i in range(0, 2) : var.num_nics > 2 ? [for j in range(2, var.num_nics) : {
-    subnet_id          = var.subnets[j]
-    public_ip          = false
-    private_ip_primary = null
-    }] : [{
-    subnet_id          = null,
-    public_ip          = null,
-    private_ip_primary = null
-  }]]
-}
-
 module "test" {
   source                            = "./../../../"
-  prefix                            = local.prefix
+  instances                         = var.instances
+  num_instances                     = var.num_instances
+  prefix                            = var.prefix
   project_id                        = var.project_id
   zones                             = var.zones
+  min_cpu_platform                  = var.min_cpu_platform
   machine_type                      = var.machine_type
+  automatic_restart                 = var.automatic_restart
+  preemptible                       = var.preemptible
   image                             = var.image
-  mgmt_subnet_ids                   = local.mgmt_subnet_ids
-  external_subnet_ids               = local.external_subnet_ids
-  internal_subnet_ids               = local.internal_subnet_ids
-  gcp_secret_manager_authentication = true
-  gcp_secret_name                   = var.secret_key
+  disk_type                         = var.disk_type
+  disk_size_gb                      = var.disk_size_gb
+  mgmt_interface                    = var.mgmt_interface
+  external_interface                = var.external_interface
+  internal_interfaces               = var.internal_interfaces
+  f5_username                       = var.f5_username
+  f5_password                       = var.f5_password
+  onboard_log                       = var.onboard_log
+  libs_dir                          = var.libs_dir
+  gcp_secret_manager_authentication = var.gcp_secret_manager_authentication
+  gcp_secret_name                   = var.gcp_secret_name
+  gcp_secret_version                = var.gcp_secret_version
+  DO_URL                            = var.DO_URL
+  AS3_URL                           = var.AS3_URL
+  TS_URL                            = var.TS_URL
+  CFE_URL                           = var.CFE_URL
+  FAST_URL                          = var.FAST_URL
+  INIT_URL                          = var.INIT_URL
   labels                            = var.labels
-  service_account                   = var.bigip_sa
-  f5_ssh_publickey                  = var.ssh_pubkey_file
+  service_account                   = var.service_account
+  f5_ssh_publickey                  = var.f5_ssh_publickey
+  custom_user_data                  = var.custom_user_data
+  metadata                          = var.metadata
   sleep_time                        = var.sleep_time
+  network_tags                      = var.network_tags
 }

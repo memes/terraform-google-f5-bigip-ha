@@ -1,3 +1,7 @@
+output "prefix" {
+  value = random_pet.prefix.id
+}
+
 output "harness_tfvars" {
   value       = abspath(local_file.harness_tfvars.filename)
   description = <<EOD
@@ -12,4 +16,15 @@ output "ssh_privkey_path" {
 The full path to the private SSH key that will be used to verify remote shell
 access.
 EOD
+}
+
+# output "f5_password" {
+#   value = random_string.password.result
+# }
+
+output "subnets" {
+  value = { for k, v in module.vpcs : k => {
+    self_link    = v.subnets_by_region[var.region].self_link
+    primary_cidr = v.subnets_by_region[var.region].primary_ipv4_cidr
+  } }
 }

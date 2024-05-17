@@ -17,6 +17,6 @@ variable "labels" {
 
 variable "admin_source_cidrs" {
   type        = list(string)
-  default     = ["0.0.0.0/0"]
-  description = "CIDRs permitted to access BIG-IP admin. Default is '0.0.0.0/0'."
+  default     = []
+  description = "CIDRs permitted to access BIG-IP admin. An empty/null set will use an autodetected CIDR of host."
 }
