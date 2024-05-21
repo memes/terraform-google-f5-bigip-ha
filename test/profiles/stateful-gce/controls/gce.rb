@@ -5,8 +5,6 @@ require 'json'
 require 'time'
 require 'rspec/expectations'
 
-ONBOARDING_SECS = 600
-
 RSpec::Matchers.define :be_valid_address do
   match do |address|
     ip = IPAddr.new(address)
@@ -36,7 +34,6 @@ control 'configuration' do
   impact 0.8
   self_links = input('output_self_links')
   prefix = input('output_prefix')
-  zones = input('output_zones')
   bigip_sa = input('output_service_account')
   labels = input('output_labels')
   machine_type = input('input_machine_type')
@@ -89,10 +86,6 @@ control 'configuration' do
       end
     end
 
-    describe instance.zone.split('/').last do
-      it { should be_in zones }
-    end
-
     describe instance.service_accounts.first do
       its('email') { should cmp bigip_sa }
     end
@@ -113,35 +106,34 @@ control 'configuration' do
       it { should_not be_nil }
       it { should_not be_empty }
     end
-    describe "#{instance} metadata BigIPHAPeerIP" do
-      subject { instance.metadata_value_by_key('BigIPHAPeerIP') }
+    describe "#{instance} metadata bigip_ha_peer_address" do
+      subject { instance.metadata_value_by_key('bigip_ha_peer_address') }
       it { should be_valid_address }
     end
-    describe "#{instance} metadata BigIPHAPeerName" do
-      subject { instance.metadata_value_by_key('BigIPHAPeerName') }
+    describe "#{instance} metadata bigip_ha_peer_name" do
+      subject { instance.metadata_value_by_key('bigip_ha_peer_name') }
       it { should_not be_nil }
       it { should_not be_empty }
     end
-    describe "#{instance} metadata BigIPHAPeerOwnerIndex" do
-      subject { instance.metadata_value_by_key('BigIPHAPeerOwnerIndex') }
+    describe "#{instance} metadata bigip_ha_peer_owner_index" do
+      subject { instance.metadata_value_by_key('bigip_ha_peer_owner_index') }
       it { should match(/^[01]$/) }
     end
   end
 end
 # rubocop:enable Metrics/BlockLength
 
-control 'ready' do
-  title 'Ensure BIG-IP VMs have been running long enough to verify onboarding'
-  impact 1.0
-  self_links = input('output_self_links')
+control 'groups' do
+  title 'Ensure instance group(s) match expectations'
+  impact 0.8
+  groups = JSON.parse(input('output_groups_json', value: '{}'), { symbolize_names: false })
+  prefix = input('output_prefix')
 
-  self_links.each_value do |url|
-    params = url.match(%r{/projects/(?<project>[^/]+)/zones/(?<zone>[^/]+)/instances/(?<name>.+)$}).named_captures
-    instance = google_compute_instance(project: params['project'], zone: params['zone'], name: params['name'])
-    describe instance do
-      it "has been running for >= #{ONBOARDING_SECS} seconds" do
-        expect(Time.iso8601(instance.creation_timestamp)).to be <= (Time.now - ONBOARDING_SECS)
-      end
+  groups.each_value do |url|
+    params = url.match(%r{/projects/(?<project>[^/]+)/zones/(?<zone>[^/]+)/instanceGroups/(?<name>.+)$}).named_captures
+    describe google_compute_instance_group(project: params['project'], zone: params['zone'], name: params['name']) do
+      it { should exist }
+      its('name') { should match(/^#{prefix}/) }
     end
   end
 end

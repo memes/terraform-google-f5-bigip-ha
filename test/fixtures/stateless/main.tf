@@ -9,8 +9,7 @@ terraform {
 }
 
 module "test" {
-  source              = "./../../../"
-  instances           = var.instances
+  source              = "./../../../modules/stateless/"
   num_instances       = var.num_instances
   prefix              = var.prefix
   project_id          = var.project_id

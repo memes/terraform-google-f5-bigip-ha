@@ -1,0 +1,6 @@
+---
+extends: default
+ignore:
+  - modules/template/templates/cloud-config.yaml
+  - test/fixtures/root/templates/runtime-init-config.yaml
+  - test/fixtures/stateless/templates/runtime-init-config.yaml

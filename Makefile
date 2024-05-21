@@ -96,10 +96,12 @@ pre-release.%:
 		xargs -0 awk 'BEGIN{m=0;s=0}; /module "ha"/ {m=1}; m==1 && /source[ \t]*=[ \t]*"(https:\/\/)?github.com\/f5devcentral\/terraform-google-f5-bigip-ha\?ref=$*/ {s++}; END{if (s==0) { printf "%s has incorrect ha source\n", FILENAME; exit 1}}'
 	@find examples -type f -name main.tf -print0 | \
 		xargs -0 awk 'BEGIN{m=0;s=0}; /module "(ilb|nlb|forwarding-rule)"/ {m=1}; m==1 && /source[ \t]*=[ \t]*"(https:\/\/)?github.com\/f5devcentral\/terraform-google-f5-bigip-ha\/\/modules\/(ilb|nlb|forwarding-rule)\?ref=$*"/ {s++}; END{if (s==0) { printf "%s has incorrect ilb/nlb/forwarding-rule source\n", FILENAME; exit 1 }}'
-	@grep -Eq '^version:[ \t]*$(subst .,\.,$(*:v%=%))[ \t]*$$' test/profiles/ha-gce/inspec.yml || \
-		(echo "test/profiles/ha-gce/inspec.yml has incorrect tag"; exit 1)
-	@grep -Eq '^version:[ \t]*$(subst .,\.,$(*:v%=%))[ \t]*$$' test/profiles/ha-ssh/inspec.yml || \
-		(echo "test/profiles/ha-ssh/inspec.yml has incorrect tag"; exit 1)
+	@grep -Eq '^version:[ \t]*$(subst .,\.,$(*:v%=%))[ \t]*$$' test/profiles/stateful-gce/inspec.yml || \
+		(echo "test/profiles/stateful-gce/inspec.yml has incorrect tag"; exit 1)
+	@grep -Eq '^version:[ \t]*$(subst .,\.,$(*:v%=%))[ \t]*$$' test/profiles/stateful-ssh/inspec.yml || \
+		(echo "test/profiles/stateful-ssh/inspec.yml has incorrect tag"; exit 1)
+	@grep -Eq '^version:[ \t]*$(subst .,\.,$(*:v%=%))[ \t]*$$' test/profiles/stateless-gce/inspec.yml || \
+		(echo "test/profiles/stateless-gce/inspec.yml has incorrect tag"; exit 1)
 	@test "$(shell git status --porcelain | wc -l | grep -Eo '[0-9]+')" == "0" || \
 		(echo "Git tree is unclean"; exit 1)
 	@echo 'Source is ready for release $*'

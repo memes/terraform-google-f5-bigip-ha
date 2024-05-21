@@ -1,6 +1,6 @@
 ---
-name: ha-gce
-title: BIG-IP HA Google Compute Engine verification
+name: stateful-gce
+title: Stateful BIG-IP HA Google Compute Engine verification
 maintainer: Matthew Emes <m.emes@f5.com>
 license: Apache-2.0
 version: 1.0.0
@@ -36,6 +36,14 @@ inputs:
     type: string
     required: true
   - name: output_instances_json
+    type: string
+    required: true
+  - name: output_groups
+    type: hash
+    required: true
+  - name: output_targets
+    type: hash
+    required: true
   - name: input_machine_type
     type: string
     required: true

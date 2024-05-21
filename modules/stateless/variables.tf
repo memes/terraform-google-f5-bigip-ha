@@ -2,12 +2,13 @@ variable "num_instances" {
   type    = number
   default = 2
   validation {
-    # An HA group requires between 2 and 8 BIG-IP instances, inclusive.
-    condition     = floor(var.num_instances) == var.num_instances && var.num_instances > 1 && var.num_instances < 9
-    error_message = "The num_instances variable must be an integer between 2 and 8, inclusive."
+    # A stateless group should have zero or more posit
+    condition     = floor(var.num_instances) == var.num_instances && var.num_instances >= 0
+    error_message = "The num_instances variable must be a positive integer >= 0."
   }
   description = <<-EOD
-  The number of BIG-IP instances to create as an HA group.
+  The number of BIG-IP instances to create as a stateless group; if using with an autoscaler this value should be set to
+  0.
   EOD
 }
 
@@ -31,7 +32,7 @@ variable "project_id" {
     error_message = "The project_id variable must must be 6 to 30 lowercase letters, digits, or hyphens; it must start with a letter and cannot end with a hyphen."
   }
   description = <<-EOD
-The GCP project identifier where the BIG-IP HA pair will be created
+The GCP project identifier where the BIG-IP instances will be created.
 EOD
 }
 
@@ -213,38 +214,10 @@ variable "network_tags" {
   validation {
     # GCP tags must be RFC1035 compliant
     condition     = alltrue([for tag in var.network_tags : can(regex("^[a-z][a-z0-9_-]{0,62}$", tag))])
-    error_message = "Each tag must be RFC1035 compliant expectations."
+    error_message = "Each tag must be RFC1035 compliant."
   }
   default     = []
   description = "The network tags which will be added to the BIG-IP VMs."
-}
-
-variable "instances" {
-  type = map(object({
-    metadata = map(string)
-    external = object({
-      primary_ip    = string
-      secondary_ips = list(string)
-    })
-    mgmt = object({
-      primary_ip    = string
-      secondary_ips = list(string)
-    })
-    internals = list(object({
-      primary_ip    = string
-      secondary_ips = list(string)
-    }))
-  }))
-  default = null
-  validation {
-    condition     = var.instances == null ? true : alltrue([for k, v in var.instances : can(regex("^[a-z][a-z0-9-]{0,61}[a-z0-9]$", k)) && (v == null ? true : (v.external == null ? true : (v.metadata == null ? true : alltrue([for k, v in v.metadata : can(regex("^[a-zA-Z0-9-_]{1,127}$", k))])) && (coalesce(v.external.primary_ip, "unspecified") == "unspecified" || can(cidrhost(v.external.primary_ip, 0))) && (v.external.secondary_ips == null || alltrue([for ip in v.external.secondary_ips : can(cidrhost(ip, 0))]))) && (v.mgmt == null ? true : (coalesce(v.mgmt.primary_ip, "unspecified") == "unspecified" || can(cidrhost(v.mgmt.primary_ip, 0))) && (v.mgmt.secondary_ips == null || alltrue([for ip in v.mgmt.secondary_ips : can(cidrhost(ip, 0))]))) && (v.internals == null ? true : alltrue([for entry in v.internals : entry == null ? true : (coalesce(entry.primary_ip, "unspecified") == "unspecified" || can(cidrhost(entry.primary_ip, 0))) && (entry.secondary_ips == null || alltrue([for ip in entry.secondary_ips : can(cidrhost(ip, 0))]))])))])
-    error_message = "Each interfaces entry key must be an RFC1035 compliant VM name, and valid or empty IP addresses for each entry."
-  }
-  description = <<-EOD
-An optional map of instances names that will be used to override num_instances and common paramters. When creating BIG-IP
-instances the names will correspond to the keys in `instances` variable, and each instance named will receieve the primary
-and/or Alias IPs associated with the instance.
-  EOD
 }
 
 variable "runtime_init_config" {

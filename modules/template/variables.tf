@@ -1,16 +1,3 @@
-variable "num_instances" {
-  type    = number
-  default = 2
-  validation {
-    # An HA group requires between 2 and 8 BIG-IP instances, inclusive.
-    condition     = floor(var.num_instances) == var.num_instances && var.num_instances > 1 && var.num_instances < 9
-    error_message = "The num_instances variable must be an integer between 2 and 8, inclusive."
-  }
-  description = <<-EOD
-  The number of BIG-IP instances to create as an HA group.
-  EOD
-}
-
 variable "prefix" {
   type = string
   validation {
@@ -32,20 +19,6 @@ variable "project_id" {
   }
   description = <<-EOD
 The GCP project identifier where the BIG-IP HA pair will be created
-EOD
-}
-
-variable "zones" {
-  type    = list(string)
-  default = null
-  validation {
-    condition     = var.zones == null ? true : alltrue([for zone in var.zones : can(regex("^[a-z]{2,20}-[a-z]{4,20}[0-9]-[a-z]$", zone))])
-    error_message = "Zones must be null or each zone must be a valid GCE zone name."
-  }
-  description = <<-EOD
-An optional list of compute zones where where the BIG-IP instances will be deployed; if null or empty (default) instances
-will be randomly distributed to known zones in the subnetwork region. If one or more zone is given, the instances will be
-constrained to the zones specified.
 EOD
 }
 
@@ -75,7 +48,7 @@ variable "automatic_restart" {
   default     = true
   description = <<EOD
 Determines if the BIG-IP VMs should be automatically restarted if terminated by
-GCE. Defaults to true to match expected Compute Engine behaviour.
+GCE. Defaults to true to match expected GCE behaviour.
 EOD
 }
 
@@ -97,8 +70,8 @@ variable "image" {
   }
   default     = "projects/f5-7626-networks-public/global/images/f5-bigip-17-1-1-3-0-0-5-payg-good-1gbps-240321070835"
   description = <<-EOD
-The self-link URI for a BIG-IP image to use as a base for the VM cluster. This can be an official F5 image from GCP
-Marketplace, or a customised image.
+The self-link URI for a BIG-IP image to use as a base for the VM cluster. This
+can be an official F5 image from GCP Marketplace, or a customised image.
 EOD
 }
 
@@ -117,9 +90,10 @@ EOD
 
 variable "disk_size_gb" {
   type        = number
-  default     = 100
+  default     = null
   description = <<EOD
-Use this flag to set the boot volume size in GB; the default value is 100.
+Use this flag to set the boot volume size in GB. If left at the default value
+the boot disk will have the same size as the base image.
 EOD
 }
 
@@ -169,17 +143,11 @@ EOD
 }
 
 variable "labels" {
-  type = map(string)
-  validation {
-    # GCP resource labels must be lowercase alphanumeric, underscore or hyphen,
-    # and the key must be <= 63 characters in length
-    condition     = length(compact([for k, v in var.labels : can(regex("^[a-z][a-z0-9_-]{0,62}$", k)) && can(regex("^[a-z0-9_-]{0,63}$", v)) ? "x" : ""])) == length(keys(var.labels))
-    error_message = "Each label key:value pair must match expectations."
-  }
+  type        = map(string)
   default     = {}
   description = <<EOD
-An optional map of string key:value pairs that will be applied to all resources created that accept labels. Default is
-an empty map.
+An optional map of string key:value pairs that will be applied to all resources
+created that accept labels. Default is an empty map.
 EOD
 }
 
@@ -195,65 +163,20 @@ EOD
 }
 
 variable "metadata" {
-  type = map(string)
-  validation {
-    # GCP metadata keys must be lowercase alphanumeric, underscore or hyphen,
-    # and the key must be <= 128 characters in length, values must be <256Kb
-    condition     = alltrue([for k, v in var.metadata : can(regex("^[a-z0-9_-]{1,127}$", k))])
-    error_message = "Each metadata key:value pair must match expectations."
-  }
+  description = "Provide custom metadata values for BIG-IP instances"
+  type        = map(string)
   default     = {}
-  description = <<-EOD
-  An optional set of metadata values to add to all BIG-IP instances. Can be used to override the onboarding script.
-EOD
 }
 
 variable "network_tags" {
-  type = list(string)
-  validation {
-    # GCP tags must be RFC1035 compliant
-    condition     = alltrue([for tag in var.network_tags : can(regex("^[a-z][a-z0-9_-]{0,62}$", tag))])
-    error_message = "Each tag must be RFC1035 compliant expectations."
-  }
+  type        = list(string)
   default     = []
   description = "The network tags which will be added to the BIG-IP VMs."
 }
 
-variable "instances" {
-  type = map(object({
-    metadata = map(string)
-    external = object({
-      primary_ip    = string
-      secondary_ips = list(string)
-    })
-    mgmt = object({
-      primary_ip    = string
-      secondary_ips = list(string)
-    })
-    internals = list(object({
-      primary_ip    = string
-      secondary_ips = list(string)
-    }))
-  }))
-  default = null
-  validation {
-    condition     = var.instances == null ? true : alltrue([for k, v in var.instances : can(regex("^[a-z][a-z0-9-]{0,61}[a-z0-9]$", k)) && (v == null ? true : (v.external == null ? true : (v.metadata == null ? true : alltrue([for k, v in v.metadata : can(regex("^[a-zA-Z0-9-_]{1,127}$", k))])) && (coalesce(v.external.primary_ip, "unspecified") == "unspecified" || can(cidrhost(v.external.primary_ip, 0))) && (v.external.secondary_ips == null || alltrue([for ip in v.external.secondary_ips : can(cidrhost(ip, 0))]))) && (v.mgmt == null ? true : (coalesce(v.mgmt.primary_ip, "unspecified") == "unspecified" || can(cidrhost(v.mgmt.primary_ip, 0))) && (v.mgmt.secondary_ips == null || alltrue([for ip in v.mgmt.secondary_ips : can(cidrhost(ip, 0))]))) && (v.internals == null ? true : alltrue([for entry in v.internals : entry == null ? true : (coalesce(entry.primary_ip, "unspecified") == "unspecified" || can(cidrhost(entry.primary_ip, 0))) && (entry.secondary_ips == null || alltrue([for ip in entry.secondary_ips : can(cidrhost(ip, 0))]))])))])
-    error_message = "Each interfaces entry key must be an RFC1035 compliant VM name, and valid or empty IP addresses for each entry."
-  }
-  description = <<-EOD
-An optional map of instances names that will be used to override num_instances and common paramters. When creating BIG-IP
-instances the names will correspond to the keys in `instances` variable, and each instance named will receieve the primary
-and/or Alias IPs associated with the instance.
-  EOD
-}
-
 variable "runtime_init_config" {
-  type        = string
-  default     = null
-  description = <<-EOD
-  A runtime-init YAML configuration that will be executed during initialisation. If omitted, the BIG-IP instances will
-  be largely unconfigured, with only the management interface accessible.
-EOD
+  type    = string
+  default = null
 }
 
 variable "runtime_init_installer" {
@@ -265,9 +188,4 @@ variable "runtime_init_installer" {
     url       = "https://github.com/F5Networks/f5-bigip-runtime-init/releases/download/1.5.2/f5-bigip-runtime-init-1.5.2-1.gz.run"
     sha256sum = "b9eea6a7b2627343553f47d18f4ebbb2604cec38a6e761ce4b79d518ac24b2d4"
   }
-  description = <<-EOD
-  Defines the location of the runtime-init package to install, and an optional SHA256 checksum. During initialisation,
-  the runtime-init installer will be downloaded from this location - which can be an http/https/gs/file/ftp URL - and
-  verified against the provided checksum, if provided.
-EOD
 }

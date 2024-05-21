@@ -5,14 +5,6 @@ output "self_links" {
   value = module.test.self_links
 }
 
-# output "target_groups" {
-#   value = module.test.target_groups
-# }
-
-# output "target_instances" {
-#   value = module.test.target_instances
-# }
-
 output "names" {
   value = module.test.names
 }
@@ -28,28 +20,20 @@ output "project_id" {
   value = var.project_id
 }
 
-output "zones" {
-  value = var.zones
-}
-
 output "service_account" {
   value = var.service_account
 }
 
-output "gcp_secret_name" {
-  value = var.gcp_secret_name
+output "admin_username" {
+  value = "admin"
 }
 
-output "f5_username" {
-  value = var.f5_username
+output "admin_password" {
+  value = var.admin_password
 }
 
-output "f5_password" {
-  value = var.f5_password
-}
-
-output "f5_ssh_publickey" {
-  value = var.f5_ssh_publickey
+output "ssh_publickey" {
+  value = var.ssh_publickey
 }
 
 output "labels" {
@@ -82,4 +66,13 @@ output "internal_interfaces_json" {
 
 output "instances_json" {
   value = jsonencode(var.instances)
+}
+
+# Root module does not produce targets or groups
+output "groups_json" {
+  value = "{}"
+}
+
+output "targets_json" {
+  value = "{}"
 }

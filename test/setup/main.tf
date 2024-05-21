@@ -189,13 +189,9 @@ resource "local_file" "harness_tfvars" {
   filename = "${path.module}/harness.tfvars"
   content  = <<-EOT
 project_id       = "${var.project_id}"
-region           = "${var.region}"
-zones            = ${jsonencode(random_shuffle.zones.result)}
 service_account  = "${google_service_account.sa.email}"
-gcp_secret_name  = ""
-f5_username      = "bigipuser"
-f5_password      = "${random_string.password.result}"
-f5_ssh_publickey = "${abspath(local_file.test_pubkey.filename)}"
+admin_password      = "${random_string.password.result}"
+ssh_publickey =  "${trimspace(tls_private_key.ssh.public_key_openssh)}"
 labels           = ${jsonencode(local.labels)}
 EOT
   depends_on = [

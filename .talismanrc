@@ -3,11 +3,11 @@
 version: "1.0"
 fileignoreconfig:
 - filename: main.tf
-  checksum: f04aff93e85f302010c7700e0c10ae3d2c930f0a0dd8ccc528de1a289d946a32
+  checksum: 1fdc8670569f2adb66ca951b252c5e915bcc4e413e5bd311641d52caaacf7ebb
 - filename: variables.tf
-  checksum: 70dab2591607af044cc909710efc7cdf85a220adfd66627b2093cea57d5365ba
+  checksum: e9c150cedbba9d7a2a311d095f06f7ee549e1d2f1a610618f25d028c7c2c0704
 - filename: README.md
-  checksum: 85adae38d450412253ad9c2e0c03718ce6610b9505b55f24695459421680b4f3
+  checksum: 809e246f7bc4326a19ccbfbc5dd5bf18170e1d4a1c5b47ae33548bf464aa5741
 - filename: examples/ilb/main.tf
   checksum: ea0852afb2da72e64a7d73d40acdb051f85fac9e78e20ce68d6244a2bda67534
 - filename: modules/ilb/variables.tf
@@ -35,7 +35,7 @@ fileignoreconfig:
 - filename: test/fixtures/examples/forwarding-rule/main.tf
   checksum: a10f139463a809cd38092679cec2b6496245bdae0ccc79082a77c1dd847bbfa0
 - filename: test/fixtures/root/main.tf
-  checksum: d1b58518519630fe574eb086718cb4a525efa3a5494bbf7e7b657e8e1aea870f
+  checksum: c167c396d95e6d1c8633bb0e289b016cb2d7e43f175181f9d2d95eb23cf0e24b
 - filename: test/ephemeral/forwarding-rule/main.tf
   checksum: 0deca9fe92f00e13e56d0993317ae5be914361a5098b16873c31a6ff5be33a91
 - filename: test/ephemeral/ilb/variables.tf
@@ -43,12 +43,26 @@ fileignoreconfig:
 - filename: test/setup/README.md
   checksum: 08afc0cbf9b8ba7dfef499eac05782f28a367b8515fb3e6ee2f95d668eaa4ff1
 - filename: kitchen.yml
-  checksum: b46d8164efc429360875c1b9662ac7901160f0638bac6b4fcae79831def8cd23
+  checksum: 0a6623b1a11a28da42ffa81960453d6f64e0daaa733d5a242222ce2ab70b8ac2
 - filename: test/ephemeral/nlb/variables.tf
   checksum: a0bed9c97d0e935b7adfcb14c44a5f69035cb79c1c2730a1a9e0ab0a11d17f3d
 - filename: test/ephemeral/forwarding-rule/variables.tf
   checksum: fd1ea303d44538ab0e408e93b87f675b8551cbcf404c14a9b8e5c37679f3892c
 - filename: test/setup/main.tf
-  checksum: e886edfc56aeed8ea5ad239fad231425a4c29c77053276986c99e748405b8aa6
+  checksum: 21dfb29d8f408441881b8509f435433eb9ffab4b8260b269dd365350befb2ea7
 - filename: examples/sandwich/main.tf
   checksum: 48c5e17a44f7f261ec58c209fcb79803d515c89073a74e3c2455870c6b539e9a
+- filename: test/fixtures/root/templates/runtime-init-config.yaml
+  checksum: fd8b92e245e2919c8ae117a09c09e1f15f0bdba37b2efc1f83b309fc93accb7e
+- filename: test/fixtures/stateless/templates/runtime-init-config.yaml
+  checksum: 1836a4325fd0ba1bd9becee25d3786a7a3c05c4d57d7333e65fcb5e470af4240
+- filename: modules/stateless/README.md
+  checksum: 085294c5d5a8878b7d3e8e6097c59adfc49d7c62a448b34101f2532250d9c583
+- filename: modules/template/README.md
+  checksum: 4ebb0e1f64452a5a515f04922346bea4fe27c8394434b30a0c767041a0bd111c
+- filename: modules/stateless/variables.tf
+  checksum: 44ca820ba3e3c890e9e849376be626015186191deb44e128336b158929e9762a
+- filename: modules/template/variables.tf
+  checksum: 57257d9795189df35fa39d3f784bb0427f65b7bcf172e02a781866f8794223c5
+- filename: test/fixtures/stateless/main.tf
+  checksum: f3ae696e89863e3e95f3217230bbe00cd7cb081790b5ada694a0e28b10b2b852
