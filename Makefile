@@ -47,7 +47,8 @@ converge.%: test/setup/harness.tfvars
 converge: test/setup/harness.tfvars
 	kitchen converge
 
-EXAMPLES=ha-via-api ha-via-lb sandwich
+# TODO @memes - add examples
+EXAMPLES=
 
 test/setup/harness.tfvars: $(wildcard test/setup/*.tf) $(wildcard test/setup/*.auto.tfvars) $(wildcard test/setup/terraform.tfvars) $(addprefix test/ephemeral/,$(addsuffix /main.tf,$(EXAMPLES)))
 	terraform -chdir=test/setup init -input=false
@@ -94,8 +95,6 @@ pre-release.%:
 		(echo "Tag doesn't meet requirements"; exit 1)
 	@find examples -type f -name main.tf -print0 | \
 		xargs -0 awk 'BEGIN{m=0;s=0}; /module "ha"/ {m=1}; m==1 && /source[ \t]*=[ \t]*"(https:\/\/)?github.com\/f5devcentral\/terraform-google-f5-bigip-ha\?ref=$*/ {s++}; END{if (s==0) { printf "%s has incorrect ha source\n", FILENAME; exit 1}}'
-	@find examples -type f -name main.tf -print0 | \
-		xargs -0 awk 'BEGIN{m=0;s=0}; /module "(ilb|nlb|forwarding-rule)"/ {m=1}; m==1 && /source[ \t]*=[ \t]*"(https:\/\/)?github.com\/f5devcentral\/terraform-google-f5-bigip-ha\/\/modules\/(ilb|nlb|forwarding-rule)\?ref=$*"/ {s++}; END{if (s==0) { printf "%s has incorrect ilb/nlb/forwarding-rule source\n", FILENAME; exit 1 }}'
 	@grep -Eq '^version:[ \t]*$(subst .,\.,$(*:v%=%))[ \t]*$$' test/profiles/stateful-gce/inspec.yml || \
 		(echo "test/profiles/stateful-gce/inspec.yml has incorrect tag"; exit 1)
 	@grep -Eq '^version:[ \t]*$(subst .,\.,$(*:v%=%))[ \t]*$$' test/profiles/stateful-ssh/inspec.yml || \

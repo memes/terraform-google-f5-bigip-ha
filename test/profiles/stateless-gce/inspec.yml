@@ -3,7 +3,7 @@ name: stateless-gce
 title: Stateless BIG-IP HA Google Compute Engine verification
 maintainer: Matthew Emes <m.emes@f5.com>
 license: Apache-2.0
-version: 1.0.0
+version: 0.2.0
 supports:
   - platform: gcp
 depends:
