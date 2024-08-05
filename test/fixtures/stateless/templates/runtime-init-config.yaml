@@ -140,27 +140,6 @@ runtime_parameters:
   - name: SSH_KEYS
     type: static
     value: '${pubkey}'
-  - name: BIG_IP_HA_PEER_NAME
-    type: url
-    value: http://169.254.169.254/computeMetadata/v1/instance/attributes/bigip_ha_peer_name
-    returnType: string
-    headers:
-      - name: Metadata-Flavor
-        value: Google
-  - name: BIG_IP_HA_PEER_ADDRESS
-    type: url
-    value: http://169.254.169.254/computeMetadata/v1/instance/attributes/bigip_ha_peer_address
-    returnType: string
-    headers:
-      - name: Metadata-Flavor
-        value: Google
-  - name: BIG_IP_HA_PEER_OWNER_INDEX
-    type: url
-    value: http://169.254.169.254/computeMetadata/v1/instance/attributes/bigip_ha_peer_owner_index
-    returnType: string
-    headers:
-      - name: Metadata-Flavor
-        value: Google
   - name: INSTANCE_NAME
     type: url
     value: http://169.254.169.254/computeMetadata/v1/instance/name
