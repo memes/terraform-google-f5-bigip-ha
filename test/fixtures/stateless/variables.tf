@@ -93,27 +93,6 @@ variable "network_tags" {
   default = []
 }
 
-variable "instances" {
-  type = map(object({
-    metadata = map(string)
-    external = object({
-      primary_ip   = string
-      secondary_ip = string
-    })
-    mgmt = object({
-      primary_ip = string
-      # TODO @memes - upstream doesn't support assigning Alias IPs on control-plane
-      # secondary_ip = string
-    })
-    internals = list(object({
-      primary_ip = string
-      # TODO @memes - upstream doesn't support assigning Alias IPs on 'internal' interfaces
-      # secondary_ip = string
-    }))
-  }))
-  default = null
-}
-
 variable "admin_password" {
   type = string
 }
