@@ -5,9 +5,13 @@ fileignoreconfig:
 - filename: main.tf
   checksum: 1fdc8670569f2adb66ca951b252c5e915bcc4e413e5bd311641d52caaacf7ebb
 - filename: variables.tf
-  checksum: e9c150cedbba9d7a2a311d095f06f7ee549e1d2f1a610618f25d028c7c2c0704
+  ignore_detectors:
+    - filecontent
+  checksum: 6953bdd0411799faee53d8cc92190540f5ff6ee4f8f84e100a95c95ecaf7f11e
 - filename: README.md
-  checksum: 809e246f7bc4326a19ccbfbc5dd5bf18170e1d4a1c5b47ae33548bf464aa5741
+  ignore_detectors:
+    - filecontent
+  checksum: b38e68f1172608bf3e7af4cf07084c1f917f9edf56e4255cc5fb3cfd3eb2bad5
 - filename: examples/ilb/main.tf
   checksum: ea0852afb2da72e64a7d73d40acdb051f85fac9e78e20ce68d6244a2bda67534
 - filename: modules/ilb/variables.tf
@@ -53,9 +57,9 @@ fileignoreconfig:
 - filename: examples/sandwich/main.tf
   checksum: 48c5e17a44f7f261ec58c209fcb79803d515c89073a74e3c2455870c6b539e9a
 - filename: test/fixtures/root/templates/runtime-init-config.yaml
-  checksum: fd8b92e245e2919c8ae117a09c09e1f15f0bdba37b2efc1f83b309fc93accb7e
+  checksum: 2c480fcf92893ca66ab3cad7e4394734abeca404ca8a9da048fc2af6b4e5b507
 - filename: test/fixtures/stateless/templates/runtime-init-config.yaml
-  checksum: 1836a4325fd0ba1bd9becee25d3786a7a3c05c4d57d7333e65fcb5e470af4240
+  checksum: 4f0ee6ac5145def1f272e2811acaa43eac308bed8a11a958e80c90ba20dc6fda
 - filename: modules/stateless/README.md
   checksum: 085294c5d5a8878b7d3e8e6097c59adfc49d7c62a448b34101f2532250d9c583
 - filename: modules/template/README.md

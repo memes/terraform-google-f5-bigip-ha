@@ -262,8 +262,8 @@ variable "runtime_init_installer" {
     sha256sum = string
   })
   default = {
-    url       = "https://github.com/F5Networks/f5-bigip-runtime-init/releases/download/1.5.2/f5-bigip-runtime-init-1.5.2-1.gz.run"
-    sha256sum = "b9eea6a7b2627343553f47d18f4ebbb2604cec38a6e761ce4b79d518ac24b2d4"
+    url       = "https://github.com/F5Networks/f5-bigip-runtime-init/releases/download/2.0.3/f5-bigip-runtime-init-2.0.3-1.gz.run"
+    sha256sum = "e38fabfee268d6b965a7c801ead7a5708e5766e349cfa6a19dd3add52018549a"
   }
   description = <<-EOD
   Defines the location of the runtime-init package to install, and an optional SHA256 checksum. During initialisation,
