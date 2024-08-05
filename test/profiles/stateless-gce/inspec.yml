@@ -9,7 +9,7 @@ supports:
 depends:
   - name: inspec-gcp
     git: https://github.com/inspec/inspec-gcp.git
-    tag: v1.11.109
+    tag: v1.11.125
 inputs:
   - name: output_self_link
     type: string
