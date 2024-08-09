@@ -31,7 +31,16 @@ locals {
   user_data = templatefile(format("%s/templates/cloud-config.yaml", path.module), {
     runtime_init_url       = try(var.runtime_init_installer.url, "")
     runtime_init_sha256sum = try(var.runtime_init_installer.sha256sum, "")
-    runtime_init_config    = var.runtime_init_config
+    runtime_init_installer_args = trimspace(join(" ", concat([
+      "--cloud gcp",
+      try(var.runtime_init_installer.skip_toolchain_metadata_sync, false) ? "--skip-toolchain-metadata-sync" : "",
+      try(var.runtime_init_installer.skip_verify, false) ? "--skip-verify" : "",
+      coalesce(try(var.runtime_init_installer.verify_gpg_key_url, "unspecified"), "unspecified") != "unspecified" ? format("--key %s", var.runtime_init_installer.verify_gpg_key_url) : "",
+    ])))
+    runtime_init_extra_args = trimspace(join(" ", concat([
+      try(var.runtime_init_installer.skip_telemetry, false) ? "--skip-telemetry" : "",
+    ])))
+    runtime_init_config = var.runtime_init_config
   })
   metadata = var.metadata == null ? {
     user-data = local.user_data

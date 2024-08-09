@@ -4,7 +4,7 @@ This sub-module creates a Google Compute instance template suitable for BIG-IP.
 
 > NOTE: This module is not intended to be used directly but as a common configuration element for an _unmanaged group_
 > of stateful instances as created by the root module, or as the template for a _managed group_ of stateless instances
-> as created by TBD module.
+> as created by stateless module.
 
 <!-- markdownlint-disable no-inline-html no-bare-urls -->
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
@@ -50,7 +50,7 @@ No modules.
 | <a name="input_network_tags"></a> [network\_tags](#input\_network\_tags) | The network tags which will be added to the BIG-IP VMs. | `list(string)` | `[]` | no |
 | <a name="input_preemptible"></a> [preemptible](#input\_preemptible) | If set to true, the BIG-IP instances will be deployed on preemptible VMs, which<br>could be terminated at any time, and have a maximum lifetime of 24 hours. Default<br>value is false. DO NOT SET TO TRUE UNLESS YOU UNDERSTAND THE RAMIFICATIONS! | `bool` | `false` | no |
 | <a name="input_runtime_init_config"></a> [runtime\_init\_config](#input\_runtime\_init\_config) | n/a | `string` | `null` | no |
-| <a name="input_runtime_init_installer"></a> [runtime\_init\_installer](#input\_runtime\_init\_installer) | n/a | <pre>object({<br>    url       = string<br>    sha256sum = string<br>  })</pre> | <pre>{<br>  "sha256sum": "b9eea6a7b2627343553f47d18f4ebbb2604cec38a6e761ce4b79d518ac24b2d4",<br>  "url": "https://github.com/F5Networks/f5-bigip-runtime-init/releases/download/1.5.2/f5-bigip-runtime-init-1.5.2-1.gz.run"<br>}</pre> | no |
+| <a name="input_runtime_init_installer"></a> [runtime\_init\_installer](#input\_runtime\_init\_installer) | Defines the location of the runtime-init package to install, and an optional SHA256 checksum. During initialisation,<br>the runtime-init installer will be downloaded from this location - which can be an http/https/gs/file/ftp URL - and<br>verified against the provided checksum, if provided. Additional flags can change the behaviour of runtime-init when used<br>in restricted environments (see https://github.com/F5Networks/f5-bigip-runtime-init?tab=readme-ov-file#private-environments). | <pre>object({<br>    url                          = string<br>    sha256sum                    = string<br>    skip_telemetry               = bool<br>    skip_toolchain_metadata_sync = bool<br>    skip_verify                  = bool<br>    verify_gpg_key_url           = string<br>  })</pre> | <pre>{<br>  "sha256sum": "e38fabfee268d6b965a7c801ead7a5708e5766e349cfa6a19dd3add52018549a",<br>  "skip_telemetry": false,<br>  "skip_toolchain_metadata_sync": false,<br>  "skip_verify": false,<br>  "url": "https://github.com/F5Networks/f5-bigip-runtime-init/releases/download/2.0.3/f5-bigip-runtime-init-2.0.3-1.gz.run",<br>  "verify_gpg_key_url": null<br>}</pre> | no |
 
 ## Outputs
 

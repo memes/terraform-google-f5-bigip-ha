@@ -108,6 +108,7 @@ write_files:
           return $?
       }
 
+
       mkdir -p /var/config/rest/downloads
 
       info "Starting to onboard; waiting for BIG-IP to be ready"
@@ -115,6 +116,23 @@ write_files:
       # shellcheck disable=SC1091
       . /usr/lib/bigstart/bigip-ready-functions
       wait_bigip_ready
+
+      # Update sysdb values to recommendations and restart services; this should only happen once so that any overrides
+      # provided by module consumer in runtime-init config are not changed.
+      if [ ! -f /config/cloud/.setDb ]; then
+          info "Setting recommended system database values"
+          /usr/bin/setdb provision.extramb 1000 || true
+          /usr/bin/setdb provision.restjavad.extramb 1384 || /usr/bin/setdb restjavad.useextramb true || true
+          /usr/bin/setdb iapplxrpm.timeout 300 || true
+          /usr/bin/setdb icrd.timeout 180 || true
+          /usr/bin/setdb restjavad.timeout 180 || true
+          /usr/bin/setdb restnoded.timeout 180 || true
+          bigstart restart restjavad
+          bigstart restart restnoded
+          touch /config/cloud/.setDB
+          info "Completed setting recommended systemd database values"
+      fi
+
       nic_count="$(curl -sf --retry 20 -H "Metadata-Flavor: Google" "http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/?recursive=true" | jq --raw-output '.|length')"
       if [ "$${nic_count}" -gt 1 ] && [ ! -f /config/cloud/.mgmtInterface ]; then
           info "Getting management interface configuration from metadata"
@@ -173,14 +191,14 @@ write_files:
 
       if [ ! -x /usr/local/bin/f5-bigip-runtime-init ] && [ -f /var/config/rest/downloads/f5-bigip-runtime-init.gz.run ]; then
           info "Installing runtime-init package"
-          bash /var/config/rest/downloads/f5-bigip-runtime-init.gz.run -- '--cloud gcp' || \
+          bash /var/config/rest/downloads/f5-bigip-runtime-init.gz.run -- '${runtime_init_installer_args}' || \
               error "Failed to install runtime-init: exit code $?"
       fi
 
       if [ -f /config/cloud/runtime-init-conf.yaml ]; then
           if [ -x /usr/local/bin/f5-bigip-runtime-init ]; then
               info "Executing runtime-init"
-              /usr/local/bin/f5-bigip-runtime-init --skip-telemetry --config-file /config/cloud/runtime-init-conf.yaml
+              /usr/local/bin/f5-bigip-runtime-init --config-file /config/cloud/runtime-init-conf.yaml ${runtime_init_extra_args}
               retval=$?
               if [ "$${retval}" -ne 0 ]; then
                   cat /var/log/cloud/bigIpRuntimeInit.log

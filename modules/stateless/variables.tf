@@ -231,16 +231,25 @@ EOD
 
 variable "runtime_init_installer" {
   type = object({
-    url       = string
-    sha256sum = string
+    url                          = string
+    sha256sum                    = string
+    skip_telemetry               = bool
+    skip_toolchain_metadata_sync = bool
+    skip_verify                  = bool
+    verify_gpg_key_url           = string
   })
   default = {
-    url       = "https://github.com/F5Networks/f5-bigip-runtime-init/releases/download/2.0.3/f5-bigip-runtime-init-2.0.3-1.gz.run"
-    sha256sum = "e38fabfee268d6b965a7c801ead7a5708e5766e349cfa6a19dd3add52018549a"
+    url                          = "https://github.com/F5Networks/f5-bigip-runtime-init/releases/download/2.0.3/f5-bigip-runtime-init-2.0.3-1.gz.run"
+    sha256sum                    = "e38fabfee268d6b965a7c801ead7a5708e5766e349cfa6a19dd3add52018549a"
+    skip_telemetry               = false
+    skip_toolchain_metadata_sync = false
+    skip_verify                  = false
+    verify_gpg_key_url           = null
   }
   description = <<-EOD
   Defines the location of the runtime-init package to install, and an optional SHA256 checksum. During initialisation,
   the runtime-init installer will be downloaded from this location - which can be an http/https/gs/file/ftp URL - and
-  verified against the provided checksum, if provided.
+  verified against the provided checksum, if provided. Additional flags can change the behaviour of runtime-init when used
+  in restricted environments (see https://github.com/F5Networks/f5-bigip-runtime-init?tab=readme-ov-file#private-environments).
 EOD
 }
