@@ -6,16 +6,6 @@
 controls:
   logLevel: info
   extensionInstallDelayInMs: 60000
-pre_onboard_enabled:
-  - name: provision_rest
-    type: inline
-    commands:
-      - /usr/bin/setdb provision.extramb 1000 || true
-      - /usr/bin/setdb provision.restjavad.extramb 1384 || /usr/bin/setdb restjavad.useextramb true || true
-      - /usr/bin/setdb iapplxrpm.timeout 300 || true
-      - /usr/bin/setdb icrd.timeout 180 || true
-      - /usr/bin/setdb restjavad.timeout 180 || true
-      - /usr/bin/setdb restnoded.timeout 180 || true
 extension_packages:
   install_operations:
     - extensionType: do

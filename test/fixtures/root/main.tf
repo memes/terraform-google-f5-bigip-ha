@@ -29,6 +29,15 @@ module "test" {
   service_account     = var.service_account
   metadata            = var.metadata
   network_tags        = var.network_tags
+  # Override runtime-init installer defaults so that testing doesn't skew numbers
+  runtime_init_installer = {
+    url                          = "https://github.com/F5Networks/f5-bigip-runtime-init/releases/download/1.5.2/f5-bigip-runtime-init-1.5.2-1.gz.run"
+    sha256sum                    = "b9eea6a7b2627343553f47d18f4ebbb2604cec38a6e761ce4b79d518ac24b2d4"
+    skip_telemetry               = true
+    skip_toolchain_metadata_sync = false
+    skip_verify                  = false
+    verify_gpg_key_url           = null
+  }
   runtime_init_config = coalesce(var.runtime_init_config, templatefile(format("%s/templates/runtime-init-config.yaml", path.module), {
     admin_password = var.admin_password
     pubkey         = var.ssh_publickey
