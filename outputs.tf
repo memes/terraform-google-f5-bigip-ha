@@ -18,17 +18,3 @@ output "mgmtPublicIPs" {
 A map of BIG-IP instance name to public IP address, if any, on the management interface.
 EOD
 }
-
-# output "groups" {
-#   value       = { for k, v in google_compute_instance_group.bigips : k => v.self_link }
-#   description = <<-EOD
-# A map of compute zones to fully-qualified BIG-IP unmanaged instance group self-links.
-# EOD
-# }
-
-# output "target_instances" {
-#   value       = [for k, v in google_compute_target_instance.target : v.self_link]
-#   description = <<-EOD
-# A list of fully-qualified target instance self-links for the BIG-IPs.
-# EOD
-# }

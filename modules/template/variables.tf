@@ -38,7 +38,7 @@ variable "machine_type" {
   description = <<-EOD
 The machine type to use for BIG-IP VMs; this may be a standard GCE machine type,
 or a customised VM ('custom-VCPUS-MEM_IN_MB'). Default value is 'n1-standard-8'.
-*Note:* machine_type is highly-correlated with network bandwidth and performance;
+_NOTE:_ machine_type is highly-correlated with network bandwidth and performance;
 an N2 machine type will give better performance but has limited regional availability.
 EOD
 }
@@ -108,7 +108,7 @@ variable "mgmt_interface" {
   }
   description = <<EOD
 Defines the subnetwork that will be attached to each instance's management interface (nic1), and a flag to assign a public
-IP adddress to the management interface.
+IP address to the management interface.
 EOD
 }
 
@@ -123,7 +123,7 @@ variable "external_interface" {
   }
   description = <<-EOD
 Defines the subnetwork that will be attached to each instance's external interface (nic0), and a flag to assign a public
-IP adddress to the management interface.
+IP address to the management interface.
 EOD
 }
 
@@ -138,7 +138,7 @@ variable "internal_interfaces" {
   }
   description = <<-EOD
 An optional list of up to 6 subnetworks that will be attached to each instance's internal interfaces (nic2...nicN),
-and flags to assign a public IP adddress to the internal interface.
+and flags to assign a public IP address to the internal interface.
 EOD
 }
 

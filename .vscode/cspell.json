@@ -8,7 +8,11 @@
         "fileignoreconfig",
         "markdownlint",
         "mgmt",
+        "payg",
+        "preemptible",
         "tfvars",
+        "unconfigured",
+        "VCPUS",
         "yamllint"
     ],
     "ignoreWords": [],
