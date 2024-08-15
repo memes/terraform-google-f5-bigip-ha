@@ -101,3 +101,8 @@ variable "runtime_init_config" {
   type    = string
   default = null
 }
+
+variable "named_ports" {
+  type    = map(number)
+  default = {}
+}

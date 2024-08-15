@@ -1,8 +1,16 @@
 #
 # Module under test outputs
 #
-output "self_link" {
-  value = module.test.self_link
+output "instance_group_manager" {
+  value = module.test.instance_group_manager
+}
+
+output "instance_group" {
+  value = module.test.instance_group
+}
+
+output "cluster_tag" {
+  value = module.test.cluster_tag
 }
 
 #
@@ -34,4 +42,8 @@ output "external_interface_json" {
 
 output "internal_interfaces_json" {
   value = jsonencode(var.internal_interfaces)
+}
+
+output "named_ports_json" {
+  value = jsonencode(var.named_ports)
 }

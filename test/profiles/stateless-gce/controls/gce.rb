@@ -17,7 +17,7 @@ end
 control 'mig' do
   title 'Ensure BIG-IP MIG meets expectations'
   impact 1.0
-  self_link = input('output_self_link')
+  self_link = input('output_instance_group_manager')
   prefix = input('output_prefix')
   num_instances = input('input_num_instances').to_i || 2
 

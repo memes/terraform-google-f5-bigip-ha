@@ -253,3 +253,11 @@ variable "runtime_init_installer" {
   in restricted environments (see https://github.com/F5Networks/f5-bigip-runtime-init?tab=readme-ov-file#private-environments).
 EOD
 }
+
+variable "named_ports" {
+  type        = map(number)
+  default     = {}
+  description = <<-EOD
+  An optional map of names to port number that will become a set of named ports in the instance group.
+  EOD
+}

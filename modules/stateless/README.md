@@ -119,6 +119,7 @@ be joined into a device sync group when combined with additional effort/configur
 | <a name="input_machine_type"></a> [machine\_type](#input\_machine\_type) | The machine type to use for BIG-IP VMs; this may be a standard GCE machine type,<br>or a customised VM ('custom-VCPUS-MEM\_IN\_MB'). Default value is 'n1-standard-8'.<br>\_NOTE:\_ machine\_type is highly-correlated with network bandwidth and performance;<br>an N2 machine type will give better performance but has limited regional availability. | `string` | `"n1-standard-8"` | no |
 | <a name="input_metadata"></a> [metadata](#input\_metadata) | An optional set of metadata values to add to all BIG-IP instances. Can be used to override the onboarding script. | `map(string)` | `{}` | no |
 | <a name="input_min_cpu_platform"></a> [min\_cpu\_platform](#input\_min\_cpu\_platform) | An optional constraint used when scheduling the BIG-IP VMs; this value prevents<br>the VMs from being scheduled on hardware that doesn't meet the minimum CPU<br>micro-architecture. Default value is 'Intel Skylake'. | `string` | `"Intel Skylake"` | no |
+| <a name="input_named_ports"></a> [named\_ports](#input\_named\_ports) | An optional map of names to port number that will become a set of named ports in the instance group. | `map(number)` | `{}` | no |
 | <a name="input_network_tags"></a> [network\_tags](#input\_network\_tags) | The network tags which will be added to the BIG-IP VMs. | `list(string)` | `[]` | no |
 | <a name="input_num_instances"></a> [num\_instances](#input\_num\_instances) | The number of BIG-IP instances to create as a stateless group; if using with an autoscaler this value should be set to<br>0. | `number` | `2` | no |
 | <a name="input_preemptible"></a> [preemptible](#input\_preemptible) | If set to true, the BIG-IP instances will be deployed on preemptible VMs, which<br>could be terminated at any time, and have a maximum lifetime of 24 hours. Default<br>value is false. DO NOT SET TO TRUE UNLESS YOU UNDERSTAND THE RAMIFICATIONS! | `bool` | `false` | no |
@@ -130,7 +131,9 @@ be joined into a device sync group when combined with additional effort/configur
 
 | Name | Description |
 |------|-------------|
-| <a name="output_self_link"></a> [self\_link](#output\_self\_link) | n/a |
+| <a name="output_cluster_tag"></a> [cluster\_tag](#output\_cluster\_tag) | The pseudo-random network tag generated to uniquely identify the instances in this stateless cluster. |
+| <a name="output_instance_group"></a> [instance\_group](#output\_instance\_group) | The Compute Engine instance group self-link of the stateless BIG-IP VMs. |
+| <a name="output_instance_group_manager"></a> [instance\_group\_manager](#output\_instance\_group\_manager) | The Compute Engine instance group manager self-link of the stateless BIG-IP VMs. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 <!-- markdownlint-enable no-inline-html no-bare-urls -->
 

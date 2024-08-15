@@ -11,7 +11,10 @@ depends:
     git: https://github.com/inspec/inspec-gcp.git
     tag: v1.11.125
 inputs:
-  - name: output_self_link
+  - name: output_instance_group_manager
+    type: string
+    required: true
+  - name: output_instance_group
     type: string
     required: true
   - name: output_prefix
@@ -39,5 +42,11 @@ inputs:
     type: string
     required: true
   - name: output_project_id
+    type: string
+    required: true
+  - name: output_named_ports_json
+    type: string
+    required: true
+  - name: output_cluster_tag
     type: string
     required: true

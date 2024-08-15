@@ -113,6 +113,14 @@ resource "google_compute_region_instance_group_manager" "mig" {
     default_action_on_failure = "REPAIR"
   }
 
+  dynamic "named_port" {
+    for_each = var.named_ports != null ? var.named_ports : {}
+    content {
+      name = named_port.key
+      port = named_port.value
+    }
+  }
+
   lifecycle {
     ignore_changes = [
       target_size,
