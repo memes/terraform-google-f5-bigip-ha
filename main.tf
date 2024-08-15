@@ -199,32 +199,6 @@ resource "google_compute_instance_from_template" "bigip" {
   ]
 }
 
-# resource "google_compute_instance_group" "bigips" {
-#   for_each    = { for k, v in google_compute_instance_from_template.bigip : v.zone => v.self_link... }
-#   project     = var.project_id
-#   name        = format("%s-%d", var.prefix, index(local.zones, each.key))
-#   description = format("BIG-IP instance group (%s %s)", var.prefix, each.key)
-#   zone        = each.key
-#   instances   = each.value
-#   depends_on = [
-#     google_compute_instance_from_template.bigip,
-#   ]
-# }
-
-# resource "google_compute_target_instance" "target" {
-#   for_each = { for i in range(0, local.num_bigips) : "${i}" => {
-#     name      = module.instances["${i}"].name
-#     zone      = module.instances["${i}"].zone
-#     self_link = module.instances["${i}"].self_link
-#   } if var.targets.instances }
-#   #for_each    = { for k, v in module.instances : v.name => { zone = v.zone, self_link = v.self_link } if var.targets.instances }
-#   project     = var.project_id
-#   name        = format("%s-tgt", each.value.name)
-#   description = format("BIG-IP %s target instance", each.value.name)
-#   zone        = each.value.zone
-#   instance    = each.value.self_link
-# }
-
 # DSC requires BIG-IP instances to communicate via HTTPS management port on
 # control-plane network.
 resource "google_compute_firewall" "mgt_sync" {

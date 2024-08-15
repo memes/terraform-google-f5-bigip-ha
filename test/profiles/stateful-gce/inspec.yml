@@ -38,11 +38,8 @@ inputs:
   - name: output_instances_json
     type: string
     required: true
-  - name: output_groups
-    type: hash
-    required: true
-  - name: output_targets
-    type: hash
+  - name: output_cluster_tag
+    type: string
     required: true
   - name: input_machine_type
     type: string

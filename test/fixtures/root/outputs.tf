@@ -9,6 +9,14 @@ output "names" {
   value = module.test.names
 }
 
+output "instances_by_zone" {
+  value = module.test.instances_by_zone
+}
+
+output "cluster_tag" {
+  value = module.test.cluster_tag
+}
+
 #
 # Fixture outputs expected by Inspec
 #
@@ -41,15 +49,15 @@ output "labels" {
 }
 
 output "bigip_addresses" {
-  value = [for k, v in module.test.mgmtPublicIPs : v]
+  value = [for k, v in module.test.public_mgmt_ips : v]
 }
 
 output "bigip_address_0" {
-  value = sort([for k, v in module.test.mgmtPublicIPs : v])[0]
+  value = sort([for k, v in module.test.public_mgmt_ips : v])[0]
 }
 
 output "bigip_address_1" {
-  value = sort([for k, v in module.test.mgmtPublicIPs : v])[1]
+  value = sort([for k, v in module.test.public_mgmt_ips : v])[1]
 }
 
 output "mgmt_interface_json" {
@@ -66,13 +74,4 @@ output "internal_interfaces_json" {
 
 output "instances_json" {
   value = jsonencode(var.instances)
-}
-
-# Root module does not produce targets or groups
-output "groups_json" {
-  value = "{}"
-}
-
-output "targets_json" {
-  value = "{}"
 }

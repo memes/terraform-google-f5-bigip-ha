@@ -122,18 +122,3 @@ control 'configuration' do
   end
 end
 # rubocop:enable Metrics/BlockLength
-
-control 'groups' do
-  title 'Ensure instance group(s) match expectations'
-  impact 0.8
-  groups = JSON.parse(input('output_groups_json', value: '{}'), { symbolize_names: false })
-  prefix = input('output_prefix')
-
-  groups.each_value do |url|
-    params = url.match(%r{/projects/(?<project>[^/]+)/zones/(?<zone>[^/]+)/instanceGroups/(?<name>.+)$}).named_captures
-    describe google_compute_instance_group(project: params['project'], zone: params['zone'], name: params['name']) do
-      it { should exist }
-      its('name') { should match(/^#{prefix}/) }
-    end
-  end
-end
